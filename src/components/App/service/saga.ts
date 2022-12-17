@@ -1,5 +1,6 @@
 import { PayloadAction } from '@reduxjs/toolkit';
-import { takeLatest, put, takeEvery } from 'redux-saga/effects';
+import { eventChannel } from 'redux-saga';
+import { takeLatest, put, takeEvery, call, take } from 'redux-saga/effects';
 import sockjs from 'sockjs-client';
 import Stomp from 'stompjs';
 import {
@@ -9,34 +10,48 @@ import {
   SET_STATUS,
 } from '.';
 
+const WOLF_STOMP_URL = 'http://localhost:8080/stomp';
 let stompClient: Stomp.Client;
 
-function* connectSockjs() {
-  try {
-    // 連接 sockjs api
-    const sock = new sockjs('https://localhost:8888/wolf-stomp');
-    stompClient = Stomp.over(sock);
-
-    // 設定連接成功和失敗的 callback
+function createChannel() {
+  return eventChannel((emitter) => {
+    const socket = new sockjs(WOLF_STOMP_URL);
+    stompClient = Stomp.over(socket);
     stompClient.connect(
       {},
       (frame) => {
-        console.log('Connected: ' + frame);
-
         stompClient.subscribe('/topic/public', (message) => {
-          put(SET_MESSAGE(message));
+          const response = JSON.parse(message.body);
+          emitter(response);
         });
       },
       (error) => {
-        console.error('connection failed: ' + error);
+        console.error(error);
+        alert('連線出錯，會在 5 後重新連線');
+        setTimeout(createChannel, 5000);
       }
     );
-  } catch (error) {
-    console.error('Failed: ' + error);
+
+    return () =>
+      stompClient.disconnect(() => {
+        alert('連線已中斷');
+      });
+  });
+}
+
+function* websocketSaga() {
+  const channel = createChannel();
+  while (true) {
+    const response: { message: string } = yield take(channel);
+    yield put(SET_MESSAGE(response?.message));
   }
 }
+
 function* sendMessage(action: PayloadAction<string>) {
   try {
+    // 沒有成功建立連線，不發送訊息
+    if (!stompClient.connected) throw Error('尚未建立連線成功，不可發訊息');
+
     const message = action.payload;
 
     stompClient.send(
@@ -46,14 +61,14 @@ function* sendMessage(action: PayloadAction<string>) {
     );
 
     yield put(SET_STATUS({ code: 200, type: 'send' }));
-    alert('發送訊息成功');
+    console.log('發送訊息成功');
   } catch (error) {
     console.error('發送訊息錯誤', error);
   }
 }
 
 function* MainSaga() {
-  yield takeLatest(FETCH_CONNECTION, connectSockjs);
+  yield takeLatest(FETCH_CONNECTION, websocketSaga);
   yield takeLatest(FETCH_SEND_MESSAGE, sendMessage);
 }
 

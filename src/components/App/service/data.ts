@@ -1,11 +1,11 @@
 interface State {
-  message: string;
+  message: Array<string>;
   messageToSend: string;
   status: { code: number; type: string };
 }
 
 export const initialState: State = {
-  message: '',
+  message: new Array(),
   messageToSend: '',
   status: { code: 0, type: '' },
 };

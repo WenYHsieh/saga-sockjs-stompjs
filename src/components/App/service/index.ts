@@ -8,9 +8,10 @@ export const slice = createSlice({
     FETCH_GET_MESSAGE: () => {},
     FETCH_CONNECTION: () => {},
     SET_MESSAGE: (state, action) => {
+      let newMessage = [...state.message, action.payload];
       return {
         ...state,
-        message: action.payload,
+        message: newMessage,
       };
     },
     FETCH_SEND_MESSAGE: (state, action) => {
