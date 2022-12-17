@@ -1,6 +1,6 @@
-import { PayloadAction } from '@reduxjs/toolkit';
-import { eventChannel } from 'redux-saga';
-import { takeLatest, put, takeEvery, call, take } from 'redux-saga/effects';
+import { AnyAction, PayloadAction } from '@reduxjs/toolkit';
+import { eventChannel, runSaga } from 'redux-saga';
+import { takeLatest, put, call, take } from 'redux-saga/effects';
 import sockjs from 'sockjs-client';
 import Stomp from 'stompjs';
 import {
@@ -9,11 +9,16 @@ import {
   SET_MESSAGE,
   SET_STATUS,
 } from '.';
+import { store } from '../../../store';
 
 const WOLF_STOMP_URL = 'http://localhost:8080/stomp';
 let stompClient: Stomp.Client;
 
-function createChannel() {
+const delay = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+const createChannel = () => {
   return eventChannel((emitter) => {
     const socket = new sockjs(WOLF_STOMP_URL);
     stompClient = Stomp.over(socket);
@@ -28,7 +33,13 @@ function createChannel() {
       (error) => {
         console.error(error);
         alert('連線出錯，會在 5 後重新連線');
-        setTimeout(createChannel, 5000);
+        runSaga(
+          {
+            dispatch: (FETCH_CONNECTION: AnyAction) =>
+              store.dispatch(FETCH_CONNECTION),
+          },
+          fetchConnectionSaga
+        );
       }
     );
 
@@ -37,6 +48,11 @@ function createChannel() {
         alert('連線已中斷');
       });
   });
+};
+
+function* fetchConnectionSaga() {
+  yield call(delay, 5000); // 等待 5 秒
+  yield put(FETCH_CONNECTION()); // 發送 FETCH_CONNECTION action
 }
 
 function* websocketSaga() {
