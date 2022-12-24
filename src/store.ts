@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import appSlice from '../src/components/App/service/index';
+import appSlice from './components/App/model/index';
 import createSagaMiddleware from 'redux-saga';
 import rootSaga from './saga';
 
