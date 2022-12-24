@@ -1,4 +1,4 @@
-import { MainSaga as appSaga } from './components/App/model/saga';
+import { MainSaga as appSaga } from './model/saga';
 import { all } from 'redux-saga/effects';
 
 function* rootSaga() {

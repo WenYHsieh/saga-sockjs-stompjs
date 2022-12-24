@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FETCH_CONNECTION, FETCH_SEND_MESSAGE } from './model';
+import { FETCH_CONNECTION, FETCH_SEND_MESSAGE } from '../../model';
 
 function App() {
   const dispatch = useDispatch();

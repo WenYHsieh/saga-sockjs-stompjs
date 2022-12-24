@@ -9,7 +9,7 @@ import {
   SET_MESSAGE,
   SET_STATUS,
 } from '.';
-import { store } from '../../../store';
+import { store } from '../store';
 
 const WOLF_STOMP_URL = 'http://localhost:8080/stomp';
 let stompClient: Stomp.Client;
