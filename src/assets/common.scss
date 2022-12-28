@@ -5,3 +5,20 @@ $color: (
   'secondary-hover': #595959,
   'box-shadow': 0 0 0 2px rgba(87, 168, 233, 0.2),
 );
+
+input {
+  width: 90%;
+  height: 32px;
+  border-radius: 4px;
+  border: 1px solid map-get($color, 'secondary');
+  outline: none;
+  box-sizing: border-box;
+  padding: 8px;
+  color: 1px solid map-get($color, 'secondary');
+
+  &:hover,
+  &:focus {
+    border: 1px solid map-get($color, 'primary-hover');
+    box-shadow: map-get($color, 'box-shadow');
+  }
+}

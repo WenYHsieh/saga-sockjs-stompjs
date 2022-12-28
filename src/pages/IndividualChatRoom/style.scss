@@ -1,0 +1,59 @@
+@import '../../assets/common.scss';
+
+.register__wrapper {
+  width: 500px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  input {
+    margin-top: 8px;
+  }
+
+  .enterButton {
+    background-color: map-get($color, 'primary');
+    color: white;
+    text-decoration: none;
+    width: 90%;
+    padding: 8px 16px;
+    margin-top: 16px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    text-align: center;
+    transition: 0.8s;
+
+    &:hover {
+      background-color: map-get($color, 'primary-hover');
+    }
+  }
+}
+
+.container {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  min-width: 200px;
+  height: 80vh;
+  border: 1px solid map-get($color, 'secondary');
+  border-radius: 4px;
+  padding: 8px 16px;
+
+  .friend {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    color: map-get($color, 'secondary');
+    .avatar {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 1px solid map-get($color, 'primary');
+      border-radius: 50%;
+      margin-right: 8px;
+      background: map-get($color, 'primary-hover');
+    }
+  }
+}
