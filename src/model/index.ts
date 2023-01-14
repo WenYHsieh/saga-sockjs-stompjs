@@ -7,8 +7,13 @@ export const slice = createSlice({
   reducers: {
     FETCH_GET_MESSAGE: () => {},
     FETCH_CONNECTION: () => {},
+    FETCH_CHANNEL_CONNECTION: (state, action) => {
+      return {
+        ...state,
+        payload: action.payload,
+      };
+    },
     SET_MESSAGE: (state, action) => {
-      // let newMessage = [...state.message, action.payload];
       return {
         ...state,
         message: action.payload,
@@ -29,6 +34,7 @@ export const slice = createSlice({
 export const {
   FETCH_GET_MESSAGE,
   FETCH_CONNECTION,
+  FETCH_CHANNEL_CONNECTION,
   SET_MESSAGE,
   FETCH_SEND_MESSAGE,
   SET_STATUS,

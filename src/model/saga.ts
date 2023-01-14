@@ -4,6 +4,7 @@ import { takeLatest, put, call, take } from 'redux-saga/effects';
 import sockjs from 'sockjs-client';
 import Stomp from 'stompjs';
 import {
+  FETCH_CHANNEL_CONNECTION,
   FETCH_CONNECTION,
   FETCH_SEND_MESSAGE,
   SET_MESSAGE,
@@ -18,7 +19,7 @@ const delay = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-const createChannel = () => {
+const createPublicChannel = () => {
   return eventChannel((emitter) => {
     const socket = new sockjs(WOLF_STOMP_URL);
     stompClient = Stomp.over(socket);
@@ -56,7 +57,7 @@ function* fetchConnectionSaga() {
 }
 
 function* websocketSaga() {
-  const channel = createChannel();
+  const channel = createPublicChannel();
   while (true) {
     const response: { message: string } = yield take(channel);
     yield put(SET_MESSAGE(response?.message));
@@ -83,9 +84,56 @@ function* sendMessage(action: PayloadAction<string>) {
   }
 }
 
+const createPrivateChannel = (userName: string) => {
+  return eventChannel((emitter) => {
+    const socket = new sockjs(`${WOLF_STOMP_URL}?userName=${userName}`);
+    stompClient = Stomp.over(socket);
+    stompClient.connect(
+      {},
+      (frame) => {
+        stompClient.subscribe('/user/queue/notifications', (message) => {
+          const response = JSON.parse(message.body);
+          emitter(response);
+        });
+      },
+      (error) => {
+        console.error(error);
+        alert('連線出錯，會在 5 後重新連線');
+        runSaga(
+          {
+            dispatch: (FETCH_CHANNEL_CONNECTION: AnyAction) =>
+              store.dispatch(FETCH_CHANNEL_CONNECTION),
+          },
+          fetchPrivateConnectionSaga,
+          userName
+        );
+      }
+    );
+
+    return () =>
+      stompClient.disconnect(() => {
+        alert('連線已中斷');
+      });
+  });
+};
+
+function* websocketChannelSaga(action: PayloadAction<string>) {
+  const channel = createPrivateChannel(action.payload);
+  while (true) {
+    const response: { message: string } = yield take(channel);
+    yield put(SET_MESSAGE(response?.message));
+  }
+}
+
+function* fetchPrivateConnectionSaga(userName: string) {
+  yield call(delay, 5000); // 等待 5 秒
+  yield put(FETCH_CHANNEL_CONNECTION(userName)); // 發送 FETCH_CONNECTION action
+}
+
 function* MainSaga() {
   yield takeLatest(FETCH_CONNECTION, websocketSaga);
   yield takeLatest(FETCH_SEND_MESSAGE, sendMessage);
+  yield takeLatest(FETCH_CHANNEL_CONNECTION, websocketChannelSaga);
 }
 
 export { MainSaga };

@@ -1,15 +1,20 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { PageRoutes } from '.';
+import { FETCH_CHANNEL_CONNECTION } from '../../model';
 import './style.scss';
 
 type Props = {
   setPageRoutes: React.Dispatch<React.SetStateAction<PageRoutes>>;
 };
 const Register = ({ setPageRoutes }: Props) => {
-  const inputElement = React.useRef();
+  const dispatch = useDispatch();
+  const inputElement = React.useRef<HTMLInputElement>(null);
 
   const handleEnterFriendList = () => {
-    //TODO connect and subscribe /user/queue/notifications
+    const userName = inputElement.current?.value ?? '';
+    dispatch(FETCH_CHANNEL_CONNECTION(userName));
+
     setPageRoutes((pageRoutes) => {
       return {
         ...pageRoutes,
@@ -21,7 +26,7 @@ const Register = ({ setPageRoutes }: Props) => {
   return (
     <div className="register__wrapper">
       <div>輸入暱稱</div>
-      <input ref={inputElement.current}></input>
+      <input ref={inputElement}></input>
       <div className="enterButton" onClick={handleEnterFriendList}>
         進入朋友列表
       </div>
